@@ -1,0 +1,19 @@
+{
+  "name": "core-canvas-play",
+  "version": "0.0.1",
+  "description": "Experiments and learning based on the book \"Core HTML5 Canvas\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jefferson Wu <makerjeffwu@gmail.com>",
+
+  "license": "ISC",
+  "dependencies": {
+    "express":"latest",
+    "chalk": "latest",
+    "clear": "latest",
+    "socket.io":"latest",
+    "serialport":"latest"
+  }
+}
