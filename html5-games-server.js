@@ -61,15 +61,6 @@ app.get('/', function(req, res){
 res.send('<b>You\'re on an active server.  Find the right page.</b>');
 });
 
-app.get('/promisevideo', function(req, res){
-    promisedb.getFakeAsyncDataObject(2000).then(function(result){
-        res.json(result);
-
-    }).catch(function(reason){
-        res.json(reason);
-    });
-});
-
 app.get('/:page', function(req, res){
     res.sendFile(process.cwd() + '/public/' + req.params.page + '.html');
     console.log(chalk.yellow('sending file ' + req.params.page + '.html'));
