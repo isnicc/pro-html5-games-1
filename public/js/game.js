@@ -3,7 +3,7 @@
  */
 
 
-// main game object
+// TODO: main game object
 var game = {
     // start initializing objects, preload, and start screen.
     init: function() {
@@ -27,7 +27,7 @@ var game = {
     }
 };
 
-// main levels object
+// TODO: main levels object
 var levels = {
     // level data
     data :  [
@@ -86,7 +86,7 @@ var levels = {
     }
 };
 
-// LOADER object
+// TODO: LOADER object
 var loader = {
     loaded: true,
     loaded_count: 0,    // assets loaded so far
@@ -157,7 +157,7 @@ var loader = {
 };
 
 
-// MAIN LOOP
+// TODO: MAIN LOOP
 window.addEventListener('load', function(e) {
     game.init();
 });
