@@ -9,27 +9,35 @@
 </head>
 <body>
 
+<!-- MAIN GAME CONTAINER -->
 <div id="game_container">
+
+    <!-- Game Canvas -->
     <canvas id="game_canvas" width="640" height="480" class="game_layer"></canvas>
 
+    <!-- Game Score Screen -->
     <div id="score_screen" class="game_layer">
         <img id="toggle_music" src="images/icons/sound.png">
         <img src="images/icons/prev.png">
         <span id="score">Score: 0</span>
     </div>
 
+    <!-- Game Start Screen -->
     <div id="game_start_screen" class="game_layer">
         <img src="images/icons/play.png" alt="Play Game" onclick="game.show_level_screen()"><br>
         <img src="images/icons/settings.png" alt="Settings">
     </div>
 
+    <!-- Game Level Select Screen -->
     <div id="level_select_screen" class="game_layer">
     </div>
 
+    <!-- Game Loading Screen -->
     <div id="loading_screen" class="game_layer">
         <div id="loading_message"></div>
     </div>
 
+    <!-- Game Ending Screen-->
     <div id="ending_screen" class="game_layer">
         <div>
             <p id="ending_message">The Level Is Over Message</p>

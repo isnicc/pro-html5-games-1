@@ -2,8 +2,41 @@
  * Created by jeffersonwu on 4/11/17.
  */
 
+// TODO: requestAnimationFrame polyfill (invokes immediately)
+(function(){
+    //TODO: continue here
+    var last_time = 0;
+    var vendors = ['ms','moz','webkit', 'o'];
 
-// TODO: main game object
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; x++) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function(callback, element) {
+            var curr_time = new Date().getTime();
+            var time_to_call = Math.max(0, 16 - (curr_time - last_time));
+
+            var id = window.setTimeout(function() {
+                callback(curr_time + time_to_call);
+            }, time_to_call);
+
+            last_time = curr_time + time_to_call;
+            return id;
+        };
+    }
+
+    if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+    }
+}());
+
+// ==============================
+// MAIN GAME OBJECT =============
+// ==============================
 var game = {
     // start initializing objects, preload, and start screen.
     init: function() {
@@ -24,12 +57,55 @@ var game = {
     show_level_screen: function() {
         $('.game_layer').hide();
         $('#level_select_screen').show('slow');
+    },
+
+    mode: 'intro',
+    // X & Y coordinates of the slingshots
+    slingshot_x: 140,
+    slingshot_y: 280,
+
+    start: function() {
+        $('.game_layer').hide();
+        // Display the game canvas and score
+        $('#game_canvas').show();
+        $('#score_screen').show();
+
+        game.mode = 'intro';
+        game.offset_left = 0;
+        game.ended = false;
+        game.animation_frame = window.requestAnimationFrame(game.animate, game.canvas);
+    },
+
+    handle_panning: function() {
+        game.offset_left++; // temporary placeholder - keeps panning to the right
+    },
+
+    animate: function() {
+        // animate background
+        game.handle_panning();
+
+        // TODO: animate the characters
+
+        // TODO: draw background with parallax scrolling
+        game.context.drawImage(game.current_level.background_image, game.offset_left/4, 0, 640, 480, 0, 0, 640, 480);
+        game.context.drawImage(game.current_level.foreground_image, game.offset_left, 0, 640, 480, 0, 0, 640, 480);
+
+        // TODO: draw slingshot
+        game.context.drawImage(game.slingshot_image, game.slingshot_x - game.offset_left, game.slingshot_y);
+        game.context.drawImage(game.slingshot_front_image, game.slingshot_x - game.offset_left, game.slingshot_y);
+
+        if (!game.ended) {
+            game.animation_frame = window.requestAnimationFrame(game.animate, game.canvas);
+        }
+
     }
 };
 
-// TODO: main levels object
+// ==============================
+// LEVELS OBJECT ================
+// ==============================
 var levels = {
-    // level data
+    // level data object
     data :  [
         {   // first level
             foreground: 'desert-foreground',
@@ -71,7 +147,7 @@ var levels = {
         $('#score').html('Score: ' + game.score);
         var level = levels.data[number];
 
-        // load the background, foreground, and slingshot images
+        // load the background, foreground, and slingshot images (objects added on the fly to the 'game' object)
         game.current_level.background_image = loader.load_image('../images/backgrounds/' + level.background + '.png');
         game.current_level.foreground_image = loader.load_image('../images/backgrounds/' + level.foreground + '.png');
         game.slingshot_image = loader.load_image('../images/slingshot.png');
@@ -86,7 +162,9 @@ var levels = {
     }
 };
 
-// TODO: LOADER object
+// =============================
+// LOADER OBJECT ===============
+// =============================
 var loader = {
     loaded: true,
     loaded_count: 0,    // assets loaded so far
@@ -156,8 +234,9 @@ var loader = {
     }
 };
 
-
-// TODO: MAIN LOOP
+// ==============================
+// MAIN LOOP ====================
+// ==============================
 window.addEventListener('load', function(e) {
     game.init();
 });
