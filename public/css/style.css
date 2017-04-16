@@ -60,3 +60,25 @@ html, body {
     background: url('../images/loader.gif') no-repeat center;
     font: 12px Arial;
 }
+
+/* Score screen */
+#score_screen {
+    height: 60px;
+    font: 32px "Comic Sans MS";
+    text-shadow: 0 0 2px #000;
+    color: white;
+}
+
+#score_screen img {
+    opacity: 0.6;
+    top: 10px;
+    position: relative;
+    padding-left: 10px;
+    cursor: pointer;
+}
+
+#score_screen #score {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+}

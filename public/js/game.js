@@ -46,6 +46,9 @@ var game = {
         //initialize loader object
         loader.init();
 
+        //initialize mouse listeners
+        mouse.init();
+
         //Hide all game layers, display start screen.
         $('.game_layer').hide();
         $('#game_start_screen').show();
@@ -72,14 +75,83 @@ var game = {
 
         game.mode = 'intro';
         game.offset_left = 0;
-        game.ended = false;
+        game.ended = false;     // used to stop animation
         game.animation_frame = window.requestAnimationFrame(game.animate, game.canvas);
     },
 
-    handle_panning: function() {
-        game.offset_left++; // temporary placeholder - keeps panning to the right
+    // ==============================
+    // GAME STATES ==================
+    // ==============================
+    // TODO: game states
+    max_speed: 3,
+    min_offset: 0,
+    max_offset: 300,
+    offset_left: 0, // current panning offset
+    score: 0,        // the game score
+
+    //pan the screen to center on new_center
+    pan_to: function(new_center) {
+        if (Math.abs(new_center - game.offset_left - game.canvas.width / 4) > 0 && game.offset_left <= game.max_offset && game.offset_left >= game.min_offset) {
+            var delta_x = Math.round(( new_center - game.offset_left - game.canvas.width / 4) / 2);
+
+            if (delta_x && Math.abs(delta_x) > game.max_speed) {
+                delta_x = game.max_speed * Math.abs(delta_x) / (delta_x);
+            }
+            game.offset_left += delta_x;
+        } else {
+            return true;
+        }
+
+        if (game.offset_left < game.min_offset) {
+            game.offset_left = game.min_offset;
+            return true;
+        }
+        else if (game.offset_left > game.max_offset) {
+            game.offset_left = game.max_offset;
+            return true;
+        }
+
+        return false;
     },
 
+    handle_panning: function() {
+        //game.offset_left++; // temporary placeholder - keeps panning to the right
+
+        if (game.mode == 'intro') {
+            if (game.pan_to(700)) {
+                game.mode = 'load-next-hero';
+            }
+        }
+
+        if (game.mode == 'wait-for-firing') {
+            if(mouse.dragging) {
+                game.pan_to(mouse.x + game.offset_left);
+            } else {
+                game.pan_to(game.slingshot_x);
+            }
+        }
+
+        if (game.mode == 'load-next-hero') {
+            //TODO:
+            // check if any villains are alive, if not, end the level (success)
+            // check if any more heroes left to load, if not, end the level (failure)
+            // load the hero and set mode to wait-for-firing
+            game.mode = 'wait-for-firing';
+        }
+
+        if (game.mode == 'firing') {
+            game.pan_to(game.slingshot_x);
+        }
+
+        if (game.mode == 'fired') {
+            //TODO:
+            // Pan to wherever the hero currently is
+        }
+    },
+
+    /**
+     * Handles animation in the game.
+     */
     animate: function() {
         // animate background
         game.handle_panning();
@@ -231,6 +303,43 @@ var loader = {
                 loader.onload = undefined;
             }
         }
+    }
+};
+
+// ==============================
+// MOUSE OBJECT =================
+// ==============================
+var mouse = {
+    x: 0,
+    y: 0,
+    down: false,
+    init: function() {
+        $('#game_canvas').mousemove(mouse.mouse_move_handler);
+        $('#game_canvas').mousedown(mouse.mouse_down_handler);
+        $('#game_canvas').mouseup(mouse.mouse_up_handler);
+    },
+
+    mouse_move_handler: function(ev) {
+        var offset = $('#game_canvas').offset();    // equiv to get-bounding-client-rect
+
+        mouse.x = ev.pageX - offset.left;
+        mouse.y = ev.pageY - offset.top;
+
+        if (mouse.down) {
+            mouse.dragging = true;
+        }
+    },
+
+    mouse_down_handler: function(ev) {
+        mouse.down = true;
+        mouse.down_x = mouse.x;
+        mouse.down_y = mouse.y;
+        ev.originalEvent.preventDefault();
+    },
+
+    mouse_up_handler: function(ev) {
+        mouse.down = false;
+        mouse.dragging = false;
     }
 };
 
