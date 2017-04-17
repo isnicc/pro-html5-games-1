@@ -62,7 +62,9 @@ function animate() {
     world.DrawDebugData();
 
     // draw custom body
-    if (special_body)
+    if (special_body) {
+        draw_special_body();
+    }
 
     // Kill Special Body if Dead
     if (special_body && special_body.GetUserData().life <= 0) {
