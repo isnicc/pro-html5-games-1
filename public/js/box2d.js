@@ -31,6 +31,18 @@ function init (){
     create_circular_body();
     create_simple_polygon_body();
 
+    // using 2 shapes...
+    create_complex_body();
+
+    // Join two bodies using a revolute joint
+    create_revolute_joint();
+
+    // create a body with special user data (for health, etc)
+    create_special_body();
+
+    // create contact listeners & track events
+    listen_for_contact();
+
     // initialize debug Draw
     setup_debug_draw();
 
@@ -42,6 +54,7 @@ var time_step = 1/60;
 // box2d happy defaults for iterations
 var velocity_iterations = 8;
 var position_iterations = 3;
+
 function animate() {
     world.Step(time_step, velocity_iterations, position_iterations);
     world.ClearForces();
@@ -156,4 +169,129 @@ function create_simple_polygon_body() {
 
     var body = world.CreateBody(body_def);
     var fixture = body.CreateFixture(fixture_def);
+}
+
+function create_complex_body() {
+    var body_def = new b2BodyDef;
+    body_def.type = b2Body.b2_dynamicBody;
+    body_def.position.x = 350/scale;
+    body_def.position.y = 50/scale;
+
+    var body = world.CreateBody(body_def);
+
+    // Create first fixture and attach a circular shape to the body
+    var fixture_def = new b2FixtureDef;
+    fixture_def.density = 1.0;
+    fixture_def.friction = 0.5;
+    fixture_def.restitution = 0.7;
+    fixture_def.shape = new b2CircleShape(40/scale);
+    body.CreateFixture(fixture_def);
+
+    // Create second fixture and attach a polygon shape to the body
+    fixture_def.shape = new b2PolygonShape;
+
+    var points = [
+        new b2Vec2(0,0),
+        new b2Vec2(40/scale, 50/scale),
+        new b2Vec2(50/scale, 100/scale),
+        new b2Vec2(-50/scale, 100/scale),
+        new b2Vec2(-40/scale, 50/scale)
+    ];
+
+    fixture_def.shape.SetAsArray(points, points.length);
+    body.CreateFixture(fixture_def);
+}
+
+function create_revolute_joint() {
+
+    // ==================
+    // define body first
+    // ==================
+    var body_def_1 = new b2BodyDef;
+    body_def_1.type = b2Body.b2_dynamicBody;
+    body_def_1.position.x = 480/scale;
+    body_def_1.position.y = 50/scale;
+    var body_1 = world.CreateBody(body_def_1);
+
+    // create first fixture and attach retangular shape to the body
+    var fixture_def_1 = new b2FixtureDef;
+    fixture_def_1.density = 1.0;
+    fixture_def_1.friction = 0.5;
+    fixture_def_1.restitution = 0.5;
+    fixture_def_1.shape = new b2PolygonShape;
+    fixture_def_1.shape.SetAsBox(50/scale, 10/scale);
+
+    body_1.CreateFixture(fixture_def_1);
+
+    // ===================
+    // define second body
+    // ===================
+    var body_def_2 = new b2BodyDef;
+    body_def_2.type = b2Body.b2_dynamicBody;
+    body_def_2.position.x = 470/scale;
+    body_def_2.position.y = 50/scale;
+    var body_2 = world.CreateBody(body_def_2);
+
+    // create second fixture and attach a polygon shape to the body
+    var fixture_def_2 = new b2FixtureDef;
+    fixture_def_2 = new b2FixtureDef;
+    fixture_def_2.density = 1.0;
+    fixture_def_2.friction = 0.5;
+    fixture_def_2.restitution = 0.5;
+    fixture_def_2.shape = new b2PolygonShape;
+
+    var points = [
+        new b2Vec2(0,0),
+        new b2Vec2(40/scale, 50/scale),
+        new b2Vec2(50/scale, 100/scale),
+        new b2Vec2(-50/scale, 100/scale),
+        new b2Vec2(-40/scale, 50/scale)
+    ];
+
+    fixture_def_2.shape.SetAsArray(points, points.length);
+    body_2.CreateFixture(fixture_def_2);
+
+    // Create a joint between body1 and body2
+    var joint_def = new b2RevoluteJointDef;
+    var joint_center = new b2Vec2(470/scale, 50/scale);
+    joint_def.Initialize(body_1, body_2, joint_center);
+    world.CreateJoint(joint_def);
+}
+
+var special_body;      // important: so we can refer to it outside of function.
+function create_special_body() {
+    var body_def = new b2BodyDef;
+    body_def.type = b2Body.b2_dynamicBody;
+    body_def.position.x = 450/scale;
+    body_def.position.y = 0/scale;
+
+    special_body = world.CreateBody(body_def);
+    special_body.SetUserData({name: 'special', life: 250}); //TODO: set user data
+
+    // create a fixture to attach a circular shape to the body
+    var fixture_def = new b2FixtureDef;
+    fixture_def.density = 1.0;
+    fixture_def.friction = 0.5;
+    fixture_def.restitution = 0.5;
+
+    fixture_def.shape = new b2CircleShape(30/scale);
+
+    var fixture = special_body.CreateFixture(fixture_def);
+}
+
+function listen_for_contact() {
+    var listener = new Box2D.Dynamics.b2ContactListener;
+    // PostSolve override.
+    listener.PostSolve = function(contact, impulse) {
+        var body_1 = contact.GetFixtureA().GetBody();
+        var body_2 = contact.GetFixtureB().GetBody();
+
+        // if either of the bodies is the special body, reduce it's life.
+        if (body_1 == special_body || body_2 == special_body) {
+            var impulse_along_normal = impulse.normalImpulses[0];
+            special_body.GetUserData().life -= impulse_along_normal;
+
+            console.log('The special body was in a collision with impulse' + impulse_along_normal + 'and its life has now become ' + special_body.GetUserData().life);
+        }
+    }
 }
