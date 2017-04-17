@@ -61,6 +61,16 @@ function animate() {
 
     world.DrawDebugData();
 
+    // draw custom body
+    if (special_body)
+
+    // Kill Special Body if Dead
+    if (special_body && special_body.GetUserData().life <= 0) {
+        world.DestroyBody(special_body);
+        special_body = undefined;
+        console.log('The special body was destroyed. ');
+    }
+
     setTimeout(animate, time_step); //TODO: replace with reqAnimFrame
 }
 
@@ -291,7 +301,47 @@ function listen_for_contact() {
             var impulse_along_normal = impulse.normalImpulses[0];
             special_body.GetUserData().life -= impulse_along_normal;
 
-            console.log('The special body was in a collision with impulse' + impulse_along_normal + 'and its life has now become ' + special_body.GetUserData().life);
+            console.log('The special body was in a collision with impulse ' + impulse_along_normal + ' and its life has now become ' + special_body.GetUserData().life);
         }
+    };
+
+    world.SetContactListener(listener); // required, otherwise isn't registered.
+}
+
+// finally draw our own sprite on top of special_body.
+function draw_special_body() {
+    // get position and angle
+    var position = special_body.GetPosition();
+    var angle = special_body.GetAngle();
+
+    // translate and rotate axis to body position and angle
+    context.translate(position.x * scale, position.y * scale);  //position * global scale
+    context.rotate(angle);
+
+    // draw a filled circular face
+    context.fillStyle = 'rgb(200, 150, 250);';
+    context.beginPath();
+    context.arc(0, 0, 30, 0, 2*Math.PI, false);
+    context.fill();
+
+    // draw two rectangular eyes
+    context.fillStyle = 'rgb(255,255,255);';
+    context.fillRect(-15, -15, 10, 5);
+    context.fillRect(5, -15, 10, 5);
+
+    // draw an upward or downward arc for a smile depending on life
+    context.strokeStyle = 'rgb(255,255,255);';
+    context.beginPath();
+
+    if (special_body.GetUserData().life > 100) {
+        context.arc(0, 0, 10, Math.PI, 2*Math.PI, true);
+    } else {
+        context.arc(0, 10, 10, Math.PI, 2*Math.PI, false);
     }
+
+    context.stroke();
+
+    // Translate and rotate axis back to original position and angle
+    context.rotate(-angle);
+    context.translate(-position.x * scale, -position.y * scale);
 }
