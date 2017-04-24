@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smoothing</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            cursor: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas" class="canvas" width="640" height="300">
+    If you can read this, canvas is not supported on your browser.
+</canvas>
+
+<script>
+
+    // =====================================
+    // OBJECTS =============================
+    // =====================================
+    // loader object.
+    var loader = {
+        loaded: true,
+        loaded_count: 0,
+        total_count: 0,
+        init: function() {
+            // file type checks go here.
+        },
+        load_image: function(url) {
+
+            this.total_count++;                 // increment TOTAL COUNT
+            this.loaded = false;                // set loaded state to false
+
+            //TODO: show loading screen.
+
+            //create image
+            var img = new Image();              // create new image object
+            img.src = url;                      // set source to url (begins loading as soon as a url is set)
+            img.onload = loader.item_loaded();  // once the image loads, run the 'item_loaded' method
+            return img;                         // return the image to be drawn
+        },
+        item_loaded: function() {
+            //fires after item has loaded, updating progress bar.
+
+            loader.loaded_count++;              // increment LOADED COUNT
+            console.log('Loaded ' + loader.loaded_count + ' of ' + loader.total_count);
+
+            // if all items are loaded
+            if (loader.loaded_count === loader.total_count) {
+                loader.loaded = true;
+
+                //TODO: hide loading screen.
+
+                // call the loader.onload method if it exists.
+                if (loader.onload) {
+                    loader.onload();
+                    loader.onload = undefined;  // reset method
+
+                }
+            }
+        }
+    };
+
+    // ==================
+    // MAIN LOOP ========
+    // ==================
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var bbox = canvas.getBoundingClientRect();
+
+    ctx.fillStyle = 'rgba(255,0,0,0.25)';
+    ctx.fillRect(0,0, canvas.width, canvas.height);
+
+    // canvas click
+    canvas.addEventListener('click', function(e) {
+        console.log('X: ' + (e.clientX - bbox.left) + ', Y: ' + (e.clientY - bbox.top));
+    });
+
+
+    var pineapple = loader.load_image('/images/entities/pineapple.png');
+
+
+    function cursor(image, x, y) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, x, y);
+    }
+
+    // ANIMATION / put redraws in this loop.
+    function animate() {
+
+        document.addEventListener('mousemove', function(e) {
+            cursor(pineapple, (e.clientX-bbox.left), (e.clientY-bbox.top));
+        });
+
+        //repeat the frame
+        requestAnimationFrame(animate);
+
+    }
+
+    // fire off the first frame.
+    requestAnimationFrame(animate);
+
+
+    // ======================================
+    // HELPER FUNCTIONS =====================
+    // ======================================
+
+
+</script>
+</body>
+</html>
