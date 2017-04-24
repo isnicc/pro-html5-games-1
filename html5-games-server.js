@@ -58,7 +58,8 @@ app.use(function(req,res,next){
 
 // TEMP ROUTES
 app.get('/', function(req, res){
-res.send('<b>You\'re on an active server.  Find the right page.</b>');
+// res.send('<b>You\'re on an active server.  Find the right page.</b>');
+    res.sendFile(process.cwd() + '/public/index.html');
 });
 
 app.get('/:page', function(req, res){

@@ -126,6 +126,24 @@ var game = {
         return false;
     },
 
+    count_heroes_and_villains: function() {
+        game.heroes = [];
+        game.villains = [];
+
+        // TODO: magic loop to get all bodies in the scene.
+        for (var body = box2d.world.GetBodyList(); body; body = body.GetNext()) {
+            var entity = body.GetUserData();
+
+            if (entity) {
+                if (entity.type == 'hero') {
+                    game.heroes.push(body);
+                }
+                else if (entity.type == 'villain') {
+                    game.villains.push(body);
+                }
+            }
+        }
+    },
     handle_panning: function() {
         //game.offset_left++; // temporary placeholder - keeps panning to the right
 
@@ -144,7 +162,7 @@ var game = {
         }
 
         if (game.mode == 'load-next-hero') {
-            //TODO:
+            //TODO: continue here
             // check if any villains are alive, if not, end the level (success)
             // check if any more heroes left to load, if not, end the level (failure)
             // load the hero and set mode to wait-for-firing
@@ -169,19 +187,46 @@ var game = {
         game.handle_panning();
 
         // TODO: animate the characters
+        var current_time = new Date().getTime();
+        var time_step;
+
+        if(game.last_update_time) {
+            time_step = (current_time - game.last_update_time)/1000;
+            box2d.step(time_step);
+        }
+        game.last_update_time = current_time;
+
 
         // TODO: draw background with parallax scrolling
         game.context.drawImage(game.current_level.background_image, game.offset_left/4, 0, 640, 480, 0, 0, 640, 480);
         game.context.drawImage(game.current_level.foreground_image, game.offset_left, 0, 640, 480, 0, 0, 640, 480);
 
-        // TODO: draw slingshot
+        // Draw slingshot
         game.context.drawImage(game.slingshot_image, game.slingshot_x - game.offset_left, game.slingshot_y);
+
+        // Draw all bodies
+        game.draw_all_bodies();
+
+        // draw front of slingshot
         game.context.drawImage(game.slingshot_front_image, game.slingshot_x - game.offset_left, game.slingshot_y);
+
 
         if (!game.ended) {
             game.animation_frame = window.requestAnimationFrame(game.animate, game.canvas);
         }
+    },
 
+    draw_all_bodies: function() {
+        box2d.world.DrawDebugData();
+
+        //iterate through all bodies and draw them on the game canvas.
+        for (var body = box2d.world.GetBodyList(); body; body = body.GetNext()) {
+            var entity = body.GetUserData();
+
+            if(entity) {
+                entities.draw(entity, body.GetPosition(), body.GetAngle());
+            }
+        }
     }
 };
 
@@ -263,12 +308,15 @@ var levels = {
         box2d.init();
 
         // TODO: continue here.
+        // declare a new current level object
 
         game.current_level = {
             number: number,
             hero: []
         };
+
         game.score = 0;
+
         $('#score').html('Score: ' + game.score);
         var level = levels.data[number];
 
@@ -277,6 +325,12 @@ var levels = {
         game.current_level.foreground_image = loader.load_image('../images/backgrounds/' + level.foreground + '.png');
         game.slingshot_image = loader.load_image('../images/slingshot.png');
         game.slingshot_front_image = loader.load_image('../images/slingshot-front.png');
+
+        // TODO: load all entities
+        for (var i = level.entities.length - 1; i >= 0; i--) {
+            var entity = level.entities[i];
+            entities.create(entity);
+        }
 
         // call game.start() once the assets have loaded.
         if(loader.loaded) {
@@ -510,8 +564,36 @@ var entities = {
 
     // take entity, its position, and its angle and draw it on the game canvas.
     draw: function(entity, position, angle) {
+        // TODO: continue here
+        game.context.translate(position.x * box2d.scale - game.offset_left, position.y * box2d.scale);
+        game.context.rotate(angle);
 
+        switch (entity.type) {
+            case 'block':
+                game.context.drawImage(entity.sprite, 0, 0, entity.sprite.width, entity.sprite.height,
+                    -entity.width / 2 - 1, -entity.height / 2 - 1, entity.width + 2, entity.height + 2);
+                break;
+            case 'villain':
+            case 'hero':
+                if (entity.shape == 'circle') {
+                    game.context.drawImage(entity.sprite, 0, 0, entity.sprite.width, entity.sprite.height, -entity.radius - 1, -entity.radius - 1, entity.radius * 2 + 2, entity.radius * 2 + 2);
+                }
+
+                // TODO: continue here
+                else if (entity.shape == 'rectangle') {
+                    game.context.drawImage(entity.sprite, 0, 0, entity.sprite.width, entity.sprite.height, -entity.width / 2 - 1, -entity.height / 2 - 1, entity.width + 2, entity.height + 2);
+                }
+                break;
+            case 'ground':
+                // do nothing... draw objects like slingshot and ground separately
+                break;
+        }
+
+        // returns context to original position and rotation
+        game.context.rotate(-angle);
+        game.context.translate(-position.x * box2d.scale + game.offset_left, -position.y * box2d.scale);
     }
+
 };
 
 // ==============================
@@ -524,6 +606,16 @@ var box2d = {
         var gravity = new b2Vec2(0, 9.8);   // declare gravity
         var allow_sleep = true;  // allow objects to go to sleep
         box2d.world = new b2World(gravity, allow_sleep);
+
+        // setup debug-draw
+        var debug_context = document.getElementById('debugcanvas').getContext('2d');
+        var debug_draw = new b2DebugDraw();
+        debug_draw.SetSprite(debug_context);
+        debug_draw.SetDrawScale(box2d.scale);
+        debug_draw.SetFillAlpha(0.3);
+        debug_draw.SetLineThickness(1.0);
+        debug_draw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+        box2d.world.SetDebugDraw(debug_draw);
     },
 
     create_rectangle: function(entity, definition) {
@@ -584,6 +676,18 @@ var box2d = {
 
         var fixture = body.CreateFixture(fixture_def);
         return body;
+    },
+
+    // capped Step() function wrapper
+    step: function(time_step) {
+        // velocity iterations = 8
+        // position iterations = 3
+
+        if (time_step > 2/60) {
+            time_step = 2/60;
+        }
+
+        box2d.world.Step(time_step, 8, 3);
     }
 };
 
