@@ -154,18 +154,65 @@ var game = {
         }
 
         if (game.mode == 'wait-for-firing') {
+
             if(mouse.dragging) {
-                game.pan_to(mouse.x + game.offset_left);
+                if (game.mouse_on_current_hero()) {
+                    game.mode = 'firing';
+                } else {
+                    game.pan_to(mouse.x + game.offset_left);
+                }
             } else {
                 game.pan_to(game.slingshot_x);
             }
         }
 
+        if (game.mode == 'firing') {
+            if (mouse.down) {
+                game.pan_to(game.slingshot_x);
+                game.current_hero.SetPosition({x: (mouse.x + game.offset_left)/box2d.scale, y: mouse.y/box2d.scale});
+            } else {
+                game.mode = 'fired';
+                var impulse_scale_factor = 0.75;
+                var impulse = new b2Vec2((game.slingshot_x + 35 - mouse.x - game.offset_left) + impulse_scale_factor, (game.slingshot_y + 25 - mouse.y) * impulse_scale_factor);
+                game.current_hero.ApplyImpulse(impulse, game.current_hero.GetWorldCenter());
+            }
+        }
+
         if (game.mode == 'load-next-hero') {
             //TODO: continue here
+            game.count_heroes_and_villains();
+
             // check if any villains are alive, if not, end the level (success)
+            if (game.villains.length == 0) {
+                game.mode = 'level-success';
+                return;
+            }
+
             // check if any more heroes left to load, if not, end the level (failure)
+            if (game.heroes.length == 0) {
+                game.mode = 'level-failure';
+                return;
+            }
+
             // load the hero and set mode to wait-for-firing
+            if (!game.current_hero) {
+                game.current_hero = game.heroes[game.heroes.length - 1];
+                game.current_hero.SetPosition({x: 180/box2d.scale, y: 200/box2d.scale });
+                game.current_hero.SetLinearVelocity({x: 0, y: 0});
+                game.current_hero.SetAngularVelocity(0);
+                game.current_hero.SetAwake(true);
+            } else {
+                // wait for hero to stop bouncing and fall asleep and then switch to wait-for-firing.
+                game.pan_to(game.slingshot_x);
+
+                if (!game.current_hero.IsAwake()) {
+                    game.mode = 'waiting-for-firing';
+                }
+            }
+
+
+
+
             game.mode = 'wait-for-firing';
         }
 
@@ -227,6 +274,18 @@ var game = {
                 entities.draw(entity, body.GetPosition(), body.GetAngle());
             }
         }
+    },
+
+    mouse_on_current_hero: function() {
+        if (!game.current_hero) {
+            return false;
+        }
+
+        var position = game.current_hero.GetPosition();
+        var distance_squared = Math.pow(position.x * box2d.scale - mouse.x -game.offset_left, 2) + Math.pow(position.y*box2d.scale - mouse.y, 2);
+        var radius_squared = Math.pow(game.current_hero.GetUserData().radius, 2);
+
+        return (distance_squared <= radius_squared);
     }
 };
 
