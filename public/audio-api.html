@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>audio api</title>
+
+    <style>
+
+    </style>
+
+</head>
+<body>
+
+<div id="audio_player">
+    <button id="play_button">pause</button>
+    <button id="mute_button">mute</button>
+</div>
+
+<script>
+    // ---------
+    // VARIABLES
+    // ---------
+    var audio;
+
+    // -----------------
+    // OBJECT REFERENCES
+    // -----------------
+    var play_button = document.getElementById('play_button');
+    var mute_button = document.getElementById('mute_button');
+
+    play_button.addEventListener('click', function(e) {
+        play_pause();
+    });
+
+    mute_button.addEventListener('click', function(e) {
+        mute();
+    });
+
+
+    // ---------
+    // FUNCTIONS
+    // ---------
+    function init_audio_player() {
+        audio = new Audio();
+        audio.src = '/sound/symphony.wav';
+        audio.loop = true;
+        audio.play();
+    }
+
+    function play_pause() {
+        if (audio.paused) {
+            audio.play();
+            play_button.textContent = 'pause';
+        } else {
+            audio.pause();
+            play_button.textContent = 'play';
+        }
+    }
+
+    function mute() {
+        if (audio.muted) {
+            audio.muted = false;
+            mute_button.textContent = 'mute';
+        } else {
+            audio.muted = true;
+            mute_button.textContent = 'unmute';
+        }
+    }
+
+    //----------------
+    // EVENT LISTENERS
+    //----------------
+    window.addEventListener('load', function(e) {
+        init_audio_player();
+    });
+</script>
+</body>
+</html>
