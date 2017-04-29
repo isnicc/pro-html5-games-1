@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>audio api 2</title>
+
+    <style>
+
+    </style>
+
+</head>
+<body>
+
+<div id="audio_player">
+</div>
+
+<script>
+    var audio_ctx = new window.AudioContext() || window.webkitAudioContext();
+    var source;
+
+    // object references
+
+
+    // functions
+    function get_data() {
+        source = audio_ctx.createBufferSource();
+        var req = new XMLHttpRequest();
+        req.open('GET','/sound/hail_to_the_chief.mp3');
+        req.responseType = 'arraybuffer';
+
+        req.onload = function() {
+            var audio_data = req.response;
+
+            audio_ctx.decodeAudioData(audio_data, function(buffer){
+                source.buffer = buffer;
+                source.connect(audio_ctx.destination);
+                source.loop = true;
+            }, function(e){
+                console.log('Error with decoding audio data. ' + e.error);
+            });
+        };
+    }
+</script>
+</body>
+</html>
