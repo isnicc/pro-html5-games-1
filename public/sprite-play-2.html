@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>spriteplay</title>
+
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+
+
+</head>
+<body>
+<h1>sprite play</h1>
+<p>Version 2 works.</p>
+
+<canvas id="canvas" class="canvas" width="500" height="300"></canvas>
+
+<script>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    var coin_image = new Image();
+    coin_image.src = '/images/coin_spritesheet.png';
+
+    coin_image.width = 44;
+    coin_image.height = 40;
+
+    var current_coin_frame = 0;
+    var total_coin_frames = 9;
+    var animation_ticks = 0;
+
+
+    function animate() {
+        console.log('running...');
+
+        // clear just the coin
+        ctx.clearRect(0, 0, coin_image.width, coin_image.height);
+
+        // draw the coin
+        ctx.drawImage(
+            coin_image,
+
+            // origin
+            current_coin_frame * coin_image.width,
+            0,
+            coin_image.width,
+            coin_image.height,
+
+            0,
+            0,
+            coin_image.width,
+            coin_image.height
+        );
+
+        // iterate through time
+        animation_ticks += 1;
+
+        // reset coin logic
+        if (current_coin_frame >= total_coin_frames) {
+            current_coin_frame = 0;
+        } else {
+
+            if(animation_ticks > 5) {
+                current_coin_frame += 1;
+                animation_ticks = 0;
+            }
+
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('load', function(e) {
+
+        // start
+        window.requestAnimationFrame(animate);
+    });
+
+</script>
+
+</body>
+</html>

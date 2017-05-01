@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>spriteplay</title>
+
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+
+
+</head>
+<body>
+<h1>sprite play</h1>
+<p>Version 3 reworking.</p>
+
+<canvas id="canvas" class="canvas" width="500" height="300"></canvas>
+
+<script>
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    // SPRITE CONSTRUCTOR
+    function Sprite(options) {
+
+        this.x = options.x || 0;
+        this.y = options.y || 0;
+
+        this.img = new Image();
+        this.img.src = options.img_src;
+        this.width = options.width;
+        this.height = options.height;
+
+        this.render = function() {
+
+            // clear frame
+            ctx.clearRect(this.x, this.y, this.width, this.height);
+
+            // draw frame
+            ctx.drawImage(
+                this.img,
+                0,
+                0,
+                this.width,
+                this.height,
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+        };
+
+        console.log('object created.');
+        return this;
+    }
+
+
+
+</script>
+
+</body>
+</html>
