@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>spriteplay</title>
+
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+
+
+</head>
+<body>
+<h1>sprite play</h1>
+<p>Version 3 reworking.</p>
+
+<canvas id="canvas" class="canvas" width="500" height="300"></canvas>
+
+<script>
+
+    //TODO: revisit again later, does not currently work.
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    // https://www.youtube.com/watch?v=aN0WV7WqnDI&index=6&list=PLAwxTw4SYaPlUUkh6txMRXE-w-6N1Z225
+    // NOTES:
+    // 1. declare new Image() object.
+    // 2. declare 'onload' method.
+    // 3. THEN set src.  Once src is set, javascript will attempt to load then call onload.
+
+    var coin_img = new Image();
+    coin_img.onload = on_load;
+    coin_img.src = '/images/coin_spritesheet.png';
+
+
+    function on_load() {
+        console.log('file has been loaded. ');
+    }
+
+
+
+
+
+</script>
+
+</body>
+</html>

@@ -23,39 +23,96 @@
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
 
-    // SPRITE CONSTRUCTOR
+    // ======================================
+    // SPRITE CONSTRUCTOR + PROTOTYPE METHODS
+    // ======================================
     function Sprite(options) {
 
-        this.x = options.x || 0;
-        this.y = options.y || 0;
-
-        this.img = new Image();
-        this.img.src = options.img_src;
+        // object vars
+        this.name = options.name;
         this.width = options.width;
         this.height = options.height;
 
-        this.render = function() {
+        // spritesheet
+        this.img = new Image();
+        this.img.src = options.src;
 
-            // clear frame
-            ctx.clearRect(this.x, this.y, this.width, this.height);
+        // animation vars
+        this.current_frame = 0;
+        this.total_frames = options.total_frames;
+        this.animation_ticks = 0;
 
-            // draw frame
+        // DRAW + TODO: animate
+        this.animate = function() {
+            console.log('animating ' + this.name + '. ');
+
+            // clear the whole canvas. TODO: make this just the sprite
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // draw the sprite
             ctx.drawImage(
                 this.img,
+                this.current_frame * this.img.width,
+                0,
+                this.img.width,
+                this.img.height,
+
                 0,
                 0,
-                this.width,
-                this.height,
-                this.x,
-                this.y,
-                this.width,
-                this.height
+                this.img.width,
+                this.img.height
             );
+
+            // iterate through time
+            this.animation_ticks += 1;
+
+            // reset sprite logic
+            if (this.current_frame >= this.total_frames) {
+                this.current_frame = 0;
+            } else {
+                if (this.animation_ticks > 5) {
+                    this.current_frame += 1;
+                    this.animation_ticks = 0;
+                }
+            }
         };
 
-        console.log('object created.');
-        return this;
     }
+
+
+    // =======================================
+    // GLOBAL ANIMATION CONTROLLER??
+    // =======================================
+
+    function animate_all() {
+        // animation code
+        console.log(Date.now());
+
+        requestAnimationFrame(animate_all);
+    }
+
+
+    window.addEventListener('DOMContentLoaded', function(e) {
+        console.log('dom content loaded. ');
+        var coin = new Sprite({
+            name: 'coin',
+            x: 10,
+            y: 10,
+            width: 44,
+            height: 40,
+            src: '/images/coin_spritesheet.png'
+        });
+    });
+
+    window.addEventListener('load', function(e) {
+        console.log('loaded, animating. ');
+        requestAnimationFrame(animate_all);
+    });
+
+
+
+
+
 
 
 
