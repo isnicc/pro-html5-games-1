@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>audio api 4</title>
+
+    <style>
+
+    </style>
+
+</head>
+<body>
+
+<h1>Sources</h1>
+
+<div id="audio_player">
+    <button id="load" class="load">load</button>
+    <button id="play" class="play">play</button>
+    <button id="stop" class="stop">stop</button>
+</div>
+
+<script>
+
+    var play_button = document.getElementById('play');
+    var load_button = document.getElementById('load');
+
+    var song_buffer = null;
+
+    var context = new (window.AudioContext || window.webkitAudioContext)();
+
+
+    load_button.addEventListener('click', function(e) {
+        load_sound('/sound/punch_2.mp3');
+    });
+
+    play_button.addEventListener('click', function(e) {
+        play_buffer(song_buffer);
+    });
+
+
+
+
+
+
+    // ======================================
+    // HALPER FUNCTIONS =====================
+    // ======================================
+
+    function load_sound(url) {
+        var req = new XMLHttpRequest();
+        req.open('GET', url, true);
+        req.responseType = 'arraybuffer';
+
+        // decode async
+        req.onload = function() {
+
+            console.log('File fully loaded, decoding to buffer...');
+
+            context.decodeAudioData(req.response, function(buffer) {
+                song_buffer = buffer;
+            }, function(e) {
+                console.log('error with decoding audio data ' + e.err);
+            });
+        };
+
+        // send request
+        console.log('Initiating download...');
+        req.send();
+    }
+
+    function play_buffer(buffer) {
+
+        if(!buffer) {
+            console.log('nothing in buffer, try loading first. ');
+        } else {
+            console.log(buffer.length + ' bytes.');
+            var source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(context.destination);
+            source.start();
+        }
+    }
+
+
+
+
+
+
+</script>
+</body>
+</html>

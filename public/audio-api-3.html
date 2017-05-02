@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>audio api 3</title>
+
+    <style>
+
+    </style>
+
+</head>
+<body>
+
+<h1>Oscillator</h1>
+
+<div id="audio_player">
+    <button id="bing" class="bing">bing</button>
+    <button id="bong" class="bong">bong</button>
+
+</div>
+
+<script>
+    var audio_context = new (window.AudioContext || window.webkitAudioContext)();
+    var current_frequency = 0;
+
+    function bing(freq) {
+        // oscillator
+        var oscillator = audio_context.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value =freq;
+        //oscillator.connect(audio_context.destination);
+
+        // gain
+        var gain = audio_context.createGain();
+        oscillator.connect(gain);
+        gain.connect(audio_context.destination);
+
+        var now = audio_context.currentTime;
+        gain.gain.setValueAtTime(1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1);
+
+        //experimental ramp up
+        oscillator.frequency.setValueAtTime = freq;
+        oscillator.frequency.exponentialRampToValueAtTime(freq + 100, now + 1);
+
+        oscillator.start(now);
+        oscillator.stop(now +1);
+    }
+
+
+    var bing_button = document.getElementById('bing');
+    var bong_button = document.getElementById('bong');
+
+    bing_button.addEventListener('click', function(e) {
+        current_frequency += 100;
+        bing(current_frequency);
+        console.log(current_frequency);
+
+    });
+
+    bong_button.addEventListener('click', function(e) {
+
+
+        current_frequency -= 100;
+        bing(current_frequency);
+        console.log(current_frequency);
+    });
+
+
+
+
+</script>
+</body>
+</html>
