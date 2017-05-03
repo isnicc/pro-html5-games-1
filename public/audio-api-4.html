@@ -52,8 +52,8 @@
 
     var context = new (window.AudioContext || window.webkitAudioContext)();
 
-    // global sound buffer array
-    var global_sound_buffer = [];
+    // global audio buffer array
+    var global_audio_buffer = [];
 
     // ======================================
     // EVENTS ===============================
@@ -65,13 +65,12 @@
 
     button.addEventListener('click', function(e) {
 
-        load_all_clips();
+        veil.create();
 
-        document.webkitRequestFullscreen();
+        load_all_clips();
 
         this.parentNode.removeChild(this);
 
-        veil.create();
 
 
     });
@@ -85,6 +84,7 @@
         loader.load_audio_clip_into_buffer('punch2', '/sound/punch_2.mp3');
         loader.load_audio_clip_into_buffer('punch4', '/sound/punch_4.mp3');
         loader.load_audio_clip_into_buffer('slap', '/sound/slap.mp3');
+        loader.load_audio_clip_into_buffer('connect', '/sound/section_01/section_01_connect.mp3');
     }
 
     // ==============================
@@ -108,10 +108,10 @@
 
                 context.decodeAudioData(req.response, function(buffer){
                     //add to global sound buffer.
-                    global_sound_buffer.push({filename: name, buffer: buffer});
+                    global_audio_buffer.push({filename: name, buffer: buffer});
 
                     // debug
-                    console.log('Added ' + name + ' to global_sound_buffer array.');
+                    console.log('Added ' + name + ' to global_audio_buffer array.');
 
                     // inform the loader
                     loader.clip_loaded();
@@ -144,7 +144,7 @@
         },
 
         onload: function() {
-            create_audio_buttons(global_sound_buffer);
+            create_audio_buttons(global_audio_buffer);
             veil.destroy();
         }
     };
@@ -155,7 +155,7 @@
     function play_audio(buffer_name) {
         var source = context.createBufferSource();
 
-        global_sound_buffer.forEach(function(elem, ind, arr) {
+        global_audio_buffer.forEach(function(elem, ind, arr) {
             if (elem.filename === buffer_name) {
                 source.buffer = elem.buffer;
             }
@@ -187,6 +187,7 @@
     // ------------------------
 
     var veil = {
+        strings: ['loading.', 'loading..', 'loading...'],
         create: function() {
             var veil = document.createElement('div');
             veil.classList.add('veil');
