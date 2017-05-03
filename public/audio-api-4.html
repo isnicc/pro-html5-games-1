@@ -6,6 +6,34 @@
 
     <style>
 
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .veil {
+            position: fixed;
+
+            top: 0;
+            left:0;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            width: 100%;
+            height: 100%;
+
+            background: rgb(82, 67, 153);
+            color: white;
+
+        }
+
     </style>
 
 </head>
@@ -14,72 +42,172 @@
 <h1>Sources</h1>
 
 <div id="audio_player">
-    <button id="load" class="load">load</button>
-    <button id="play" class="play">play</button>
-    <button id="stop" class="stop">stop</button>
+    <button id="button">load</button>
+
 </div>
 
 <script>
 
-    var play_button = document.getElementById('play');
-    var load_button = document.getElementById('load');
-
-    var song_buffer = null;
+    var button = document.getElementById('button');
 
     var context = new (window.AudioContext || window.webkitAudioContext)();
 
+    // global sound buffer array
+    var global_sound_buffer = [];
 
-    load_button.addEventListener('click', function(e) {
-        load_sound('/sound/punch_2.mp3');
+    // ======================================
+    // EVENTS ===============================
+    // ======================================
+
+    window.addEventListener('load', function(e) {
+        console.log('Page loaded. ');
     });
 
-    play_button.addEventListener('click', function(e) {
-        play_buffer(song_buffer);
+    button.addEventListener('click', function(e) {
+
+        load_all_clips();
+
+        document.webkitRequestFullscreen();
+
+        this.parentNode.removeChild(this);
+
+        veil.create();
+
+
     });
-
-
-
-
-
 
     // ======================================
     // HALPER FUNCTIONS =====================
     // ======================================
 
-    function load_sound(url) {
-        var req = new XMLHttpRequest();
-        req.open('GET', url, true);
-        req.responseType = 'arraybuffer';
-
-        // decode async
-        req.onload = function() {
-
-            console.log('File fully loaded, decoding to buffer...');
-
-            context.decodeAudioData(req.response, function(buffer) {
-                song_buffer = buffer;
-            }, function(e) {
-                console.log('error with decoding audio data ' + e.err);
-            });
-        };
-
-        // send request
-        console.log('Initiating download...');
-        req.send();
+    function load_all_clips() {
+        loader.load_audio_clip_into_buffer('music', '/sound/music.mp3');
+        loader.load_audio_clip_into_buffer('punch2', '/sound/punch_2.mp3');
+        loader.load_audio_clip_into_buffer('punch4', '/sound/punch_4.mp3');
+        loader.load_audio_clip_into_buffer('slap', '/sound/slap.mp3');
     }
 
-    function play_buffer(buffer) {
+    // ==============================
+    // LOADER OBJECT ================
+    // ==============================
+    var loader = {
+        loaded: true,
+        loaded_count: 0,
+        total_count:0,
 
-        if(!buffer) {
-            console.log('nothing in buffer, try loading first. ');
-        } else {
-            console.log(buffer.length + ' bytes.');
-            var source = context.createBufferSource();
-            source.buffer = buffer;
-            source.connect(context.destination);
-            source.start();
+        load_audio_clip_into_buffer: function(name, url) {
+            this.total_count++;
+            this.loaded = false;
+
+            var req = new XMLHttpRequest();
+            req.open('GET', url, true);
+            req.responseType = 'arraybuffer';
+
+            req.onload = function() {
+                console.log(name + ' is fully loaded. decoding...');
+
+                context.decodeAudioData(req.response, function(buffer){
+                    //add to global sound buffer.
+                    global_sound_buffer.push({filename: name, buffer: buffer});
+
+                    // debug
+                    console.log('Added ' + name + ' to global_sound_buffer array.');
+
+                    // inform the loader
+                    loader.clip_loaded();
+
+                }, function(e){
+                    console.log('Error ' + e.err);
+
+                });
+            };
+            req.send();
+        },
+
+        clip_loaded: function() {
+            loader.loaded_count++;
+
+            console.log('Loaded ' + loader.loaded_count + ' of ' + loader.total_count);
+
+            // check to see if fully loaded
+            if(loader.loaded_count === loader.total_count) {
+                loader.loaded = true;
+
+                console.log('Everything is fully loaded. ');
+
+                // call loader.onload message if it exists.
+                if (loader.onload) {
+                    loader.onload();
+                    loader.onload = undefined;
+                }
+            }
+        },
+
+        onload: function() {
+            create_audio_buttons(global_sound_buffer);
+            veil.destroy();
         }
+    };
+
+    // ----------------------
+    // PLAY AUDIO
+    // ----------------------
+    function play_audio(buffer_name) {
+        var source = context.createBufferSource();
+
+        global_sound_buffer.forEach(function(elem, ind, arr) {
+            if (elem.filename === buffer_name) {
+                source.buffer = elem.buffer;
+            }
+        });
+
+        source.connect(context.destination);
+        source.start();
     }
+
+    // -----------------------
+    // CREATE AUDIO BUTTON
+    // -----------------------
+    function create_audio_buttons(buffer_array) {
+        buffer_array.forEach(function(elem, ind, arr) {
+            var button = document.createElement('button');
+            button.id = elem.filename;
+            button.textContent = elem.filename;
+
+            button.onclick = function() {
+                play_audio(elem.filename);
+            };
+
+            document.getElementById('audio_player').appendChild(button);
+        });
+    }
+
+    // ------------------------
+    // VEIL OBJECT
+    // ------------------------
+
+    var veil = {
+        create: function() {
+            var veil = document.createElement('div');
+            veil.classList.add('veil');
+            veil.id = 'veil';
+
+            document.body.appendChild(veil);
+            veil.innerHTML = 'loading...';
+
+        },
+        destroy: function() {
+            var target = document.getElementById('veil');
+            target.parentNode.removeChild(target);
+        }
+    };
+
+
+    // TODO: use logo loader to load audio
+    // TODO: play background music while loading all video elements.
+
+
+
 
 
 
