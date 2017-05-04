@@ -8,6 +8,7 @@
 - [Ear to the Bits: Web Audio Timing Tutorial](http://catarak.github.io/blog/2014/12/02/web-audio-timing-tutorial/)
 - [Fullscreen API](https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API)
 - [David Walsh: Fullscreen API](https://davidwalsh.name/fullscreen)
+- [Sound.JS](https://github.com/CreateJS/SoundJS)
 
 ## Notes
 - Oscillator nodes are so optimized that they don't need to be pooled. Just create and dispose of on the fly.
