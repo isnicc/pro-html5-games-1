@@ -7,13 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jefferson Wu <makerjeffwu@gmail.com>",
-
   "license": "ISC",
   "dependencies": {
-    "express":"latest",
     "chalk": "latest",
     "clear": "latest",
-    "socket.io":"latest",
-    "serialport":"latest"
+    "express": "latest",
+    "serialport": "latest",
+    "socket.io": "latest",
+    "webrtc-adapter": "^3.3.4"
   }
 }

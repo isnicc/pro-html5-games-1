@@ -1,0 +1,171 @@
+<!-- NOT WORKING -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>still photo</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .camera {
+            width: 340px;
+            display: inline-block;
+        }
+
+        .output {
+            width: 340px;
+            display: inline-block;
+        }
+
+        #video {
+            border: 1px solid black;
+            box-shadow: 2px 2px 3px black;
+            width: 320px;
+            height: 240px;
+        }
+
+        #photo {
+            border: 1px solid black;
+            box-shadow: 2px 2px 3px black;
+            width: 320px;
+            height: 240px;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .content_area {
+            font-size: 16px;
+            font-family: "Lucida Grande", "Arial", sans-serif;
+            width: 760px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content_area">
+    <h1>MDN - WebRTC: Still photo capture demo</h1>
+    <p>Capture a stream</p>
+
+    <div class="camera">
+        <video id="video">Video stream not available. </video>
+        <button id="start_button">Take photo</button>
+    </div>
+
+    <canvas id="canvas">
+    </canvas>
+
+    <div class="output">
+        <img id="photo" alt="screen capture will appear in this box.">
+    </div>
+
+</div>
+
+
+<script>
+
+    // width and height of captured photo
+    var width = 320;    // scale photo to this width
+    var height = 0;     // automatically computed
+
+    // indicates if streaming has started.
+    var streaming = false;
+
+    // various HTML elements we need to configure or control. set by startup() function. declared globally.
+    var video = null;
+    var canvas = null;
+    var photo = null;
+    var start_button = null;
+
+    function startup() {
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        photo = document.getElementById('photo');
+        start_button = document.getElementById('start_button');
+
+        navigator.getMedia = (
+            navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia
+        );
+
+        navigator.getMedia({
+            video: true,
+            audio: false
+        }, function(stream) {
+            if (navigator.mozGetUserMedia) {
+                video.mozSrcObject = stream;
+            } else {
+                var vendorURL = window.URL || window.webkitURL;
+                video.src = vendorURL.createObjectURL(stream);
+            }
+
+            video.play();
+        }, function(err) {
+            console.log('An error has occured. ' + err);
+        });
+
+        video.addEventListener('canplay', function(e) {
+            if (!stream) {
+                height = video.videoHeight / (video.videoWidth/width);
+
+                // firefox bug
+                if (isNaN(height)) {
+                    height = width / (4/3);
+                }
+
+                video.setAttribute('width', width);
+                video.setAttribute('height', height);
+                canvas.setAttribute('width', width);
+                canvas.setAttribute('height', height);
+                streaming = true;
+            }
+        }, false);
+
+        start_button.addEventListener('click', function(e) {
+            take_picture();
+            e.preventDefault();
+        });
+
+        clear_photo();
+    }
+
+    function clear_photo() {
+        var context = canvas.getContext('2d');
+        context.fillStyle = "#AAA";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        var data = canvas.toDataURL('image/png');
+        photo.setAttribute('src', data);
+    }
+
+    function take_picture() {
+        var context = canvas.getContext('2d');
+
+        if (width && height) {
+            canvas.width = width;
+            canvas.height = height;
+
+            context.drawImage(video, 0, 0, width, height);
+
+            var data = canvas.toDataURL('img/png');
+            photo.setAttribute('src', data);
+        } else {
+            clear_photo();
+        }
+    }
+
+    // run this on startup
+    window.addEventListener('load', startup, false);
+</script>
+
+
+</body>
+</html>

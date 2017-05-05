@@ -1,0 +1,104 @@
+<!--TODO: CONFIRMED WORKING ON MOBILE ANDROID -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <title>getUserMedia android</title>
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <script src="/js/adapter.js"></script>
+
+    <style>
+        #video {
+            border: 5px solid black;
+            border-radius: 5px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div id="container">
+
+    <video id="video" autoplay></video>
+    <div id="error_msg"></div>
+
+    <p>Display the video stream from <code>getUserMedia()</code> in a video element.</p>
+
+    <p>The <code>MediaStream</code> object <vode>stream</vode></p> passed to the <code>getUserMedia()</code> callback is in the global scope so it can be inspected from the console.
+
+
+    <script>
+        'use strict';
+
+//        navigator.mediaDevices.getUserMedia = (
+//            navigator.mediaDevices.getUserMedia ||
+//                navigator.mediaDevices.webkitGetUserMedia ||
+//                navigator.mediaDevices.mozGetUserMedia ||
+//                navigator.mediaDevices.msGetUserMedia
+//        );
+
+        var error_element = document.getElementById('error_msg');
+        var video = document.getElementById('video');
+
+        // put variables in global scope to make them available to the browser console.
+        var constraints = window.constraints = {
+            audio: true,
+            video: {facingMode: {exact: 'environment'}} // facingMode: 'user', or 'environment'
+        };
+
+        // =======================
+        // HANDLE SUCCESS FUNCTION
+        // =======================
+        function handle_success(stream) {
+            var video_tracks = stream.getVideoTracks();
+
+            console.log('Got stream with constraints: ' + constraints);
+            console.log('Using video device: ' + video_tracks[0].label);
+
+            // TODO: verify if this is the right formatting.
+            stream.oninactive = function() {
+                console.log('Stream inactive');
+            };
+
+            window.stream = stream; //make variable available to browser console.
+            video.srcObject = stream;
+        }
+
+        // =====================
+        // HANDLE ERROR FUNCTION
+        // =====================
+        function handle_error(error) {
+            if (error.name ==='ConstraintNotSatisfiedError') {
+                error_msg('The resolution ' + constraints.video.width.exact + 'x' + constraints.video.width.exact + ' px is not supported by your device. ');
+            }
+            else if (error.name === 'PermissionDeniedError') {
+                error_msg('Permissions have not been granted to yoru camera and microphone, you need to allow the page access to the devices to work.');
+            }
+
+            error_msg('getUserMedia error: ' + error.name, error);
+        }
+
+        // ============================
+        // print error message function
+        // ============================
+        function error_msg(msg, error) {
+            error_element.innerHTML += '<p>' + msg + '</p>';
+
+            if (typeof error !== 'undefined') {
+                console.log(error);
+            }
+        }
+
+        navigator.mediaDevices.getUserMedia(constraints).then(handle_success).catch(handle_error);
+
+    </script>
+
+
+
+
+</div>
+
+</body>
+</html>

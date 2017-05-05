@@ -6,19 +6,34 @@
 // ========================
 // MODULES ================
 // ========================
+const fs                = require('fs');
 const express           = require('express');
 const app               = express();
 const http              = require('http').Server(app);
+const https             = require('https');
 const chalk             = require('chalk');
 const clear             = require('clear');
 const io                = require('socket.io')(http);
+
+
+// =========================
+// HTTPS ===================
+// =========================
+const hskey = fs.readFileSync(process.cwd() + '/hacksparrow-key.pem');
+const hscert = fs.readFileSync(process.cwd() + '/hacksparrow-cert.pem');
+
+const credentials       = {key: hskey, cert: hscert};
+const https_server      = https.createServer(credentials, app);
+
 
 // =========================
 // CONFIGURATION ===========
 // =========================
 
-const port              = process.env.PORT || 3000;
+const port              = process.env.PORT || 3443;
 var connectedClients    = 0;
+
+
 
 //------------------------
 //--- enable socket.io ---
@@ -90,7 +105,7 @@ app.use(function(req,res,next){
 // ===== START SERVER =====
 // ========================
 
-http.listen(port, function(err){
+https_server.listen(port, function(err){
     if(err) {
         console.log(Error('Error: ' + err));
     } else {
