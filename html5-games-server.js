@@ -1,6 +1,7 @@
 /**
  * Pro HTML5 Games
  * Created by jefferson.wu on 04/09/17.
+ * Updated to have a HTTP / HTTPS switch based on port. Defaults to secure.
  */
 
 // ========================
@@ -105,11 +106,25 @@ app.use(function(req,res,next){
 // ===== START SERVER =====
 // ========================
 
-https_server.listen(port, function(err){
-    if(err) {
-        console.log(Error('Error: ' + err));
-    } else {
-        clear();
-        console.log(chalk.blue('Canvas Core on port ' + port));
-    }
-});
+// if port is 3443 (String) , HTTPS
+if (port === '3443') {
+    https_server.listen(port, function(err){
+        if(err) {
+            console.log(Error('Error: ' + err));
+        } else {
+            clear();
+            console.log(chalk.blue('[SECURE] Canvas Core on port ' + port));
+        }
+    });
+} else {
+    http.listen(port, function(err){
+        if(err) {
+            console.log(Error('Error: ' + err));
+        } else {
+            clear();
+            console.log(chalk.yellow('[UNSECURE] Canvas Core on port ' + port));
+        }
+    });
+
+}
+

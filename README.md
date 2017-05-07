@@ -16,6 +16,7 @@
 - [mobile HTML5 compatibility site](http://mobilehtml5.org/)
 - [WebRTC: Get Sources (root stackoverflow)](http://stackoverflow.com/questions/18625007/enable-rear-camera-with-html5)
 - [WebRTC Example of Input and output](https://webrtc.github.io/samples/src/content/devices/input-output/) DEVICE SELECTION example.
+- [Making Sprite Based Games with Canvas](http://jlongster.com/Making-Sprite-based-Games-with-Canvas) (NEW, jlongster-tut.html)
 
 ## Notes
 - Oscillator nodes are so optimized that they don't need to be pooled. Just create and dispose of on the fly.
